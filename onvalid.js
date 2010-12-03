@@ -32,7 +32,7 @@ Onvalid may be freely distributed under the MIT license.
     /*
       ## Schemas
       
-      A Schema is just a normal object. To validate a JSON object
+      A Schema is just a normal object. To validator a JSON object
       against the schema properties of the Schema object are matched
       against the equivalent property in teh JSON object.
     */
@@ -40,10 +40,8 @@ Onvalid may be freely distributed under the MIT license.
     /*
       Validates a JSON object against the given schema object.
     */
-    var validateWSchema = Onvalid.validate = function (object, schema) {
-        return _.all (_.keys (schema), function (object, key) {
-                return validate (object.key, schema.key);
-            }, object);
+    Onvalid.validate = function (object, schema) {
+        return match (schema)(object);
     };
     
     /*
@@ -58,7 +56,7 @@ Onvalid may be freely distributed under the MIT license.
       Validate a single property of the object. If the validator is a value then
       assume we are checking for equality. Otherwise call the validator function.
     */
-    var validate = function (property, validator) {
+    var validator = function (property, validator) {
         if (_.isFunction (validator))
             return validator (property);
         else
@@ -67,18 +65,23 @@ Onvalid may be freely distributed under the MIT license.
 
     /*
       Turns a schema object in to a validator function. Validates that the
-      child object contained in the JSON proeprty is validated by the schema.
+      child object contained in the JSON proeprty is validatord by the schema.
     */
-    Onvalid.child = function (v) {return function (p) {return isValid (p, v);};};
+    var match = Onvalid.match = function (vd) {return function (pd) {
+        if (_.isUndefined(pd)) return false;
+        return _.all (_.keys (vd), function (key) {
+                return validator (pd[key], vd[key]);
+            });        
+    };};
     
     /*
       A boolean expression. The property can match any of the provided
       validator funcitons or values.
     */
     Onvalid.or = function (vs) {return function (p) {
-        return _.any (vs, function (p, v) {
-                return validateSingle (p, v);
-            }, p);
+        return _.any (vs, function (v) {
+                return validator (p, v);
+            });
     };};
 
     /*
@@ -86,48 +89,49 @@ Onvalid may be freely distributed under the MIT license.
       the given validator.
     */
     Onvalid.not = function (v) {return function (p) {
-        return !validateSingle (p, v);
+        return !validator (p, v);
     };};
     
     /*
       If the object does not contain a property or the property value is 'undefined'
-      then it validates. Otherwise check the value.
+      then it validators. Otherwise check the value.
      */
     Onvalid.opt = function (v) {return function (p) {
         if (_.isUndefined (p))
             return true;
         else
-            return validateSingle (p, v);
+            return validator (p, v);
     };};
      
     /*
       Ensure that the property does not exist.
     */
-    Onvalid.notExists = function () {return false;};
+    Onvalid.notExists = function (p) {return _.isUndefined(p);};
     
     /*
       Ensure that the property exists.
     */
-    Onvalid.exists = function () {return true;};
+    Onvalid.exists = function (p) {return !_.isUndefined(p);};
     
     /*
       If the property of the object is an array, ensure that all items inside
       that array are present in the collection provided.
     */
     Onvalid.all = function (vs) {return function (ps) {
-        return _.all (ps, function (vs, p) {_.contains(p, vs);}, vs);
+        if (!_.isArray(ps)) return false;
+        return _.all (ps, function (p) {return _.contains(p, vs);});
     };};
     
     /*
       Ensure that the property is contained in the collection provided.
     */
-    Onvalid._in = function (vs) {return function (p) {_.contains(p, vs);};};
+    Onvalid._in = function (vs) {return function (p) {return _.contains(p, vs);};};
     
     /*
       Ensure that the property is not contained in the colleciton provided.
     */
     Onvalid.nin = function (vs) {return function (p) {
-        return _.all (vs, function (p, v) {return !_.isEqual (p, v);}, p);
+        return _.all (vs, function (v) {return !_.isEqual (p, v);});
     };};
     
     /*

@@ -14,6 +14,6 @@ task 'lint', 'run jslint over the source', ->
     proc.on        'exit', (status) -> process.exit(1) if status != 0
 
 task 'test', 'run all unit tests', ->
-    proc = cp.spawn 'expresso', ['onvalid.test.js',]
+    proc = cp.spawn 'expresso', ['onvalid.test.js', '-I', './',]
     proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
     proc.on        'exit', (status) -> process.exit(1) if status != 0
