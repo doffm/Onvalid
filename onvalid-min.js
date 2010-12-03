@@ -1,0 +1,7 @@
+/* 
+## Onvalid.js
+   
+onvalid.js 0.1.0
+Copyright (c) 2010 Mark Doffman, Codethink Ltd
+Onvalid may be freely distributed under the MIT license.
+*/(function(){typeof exports!=="undefined"?a=exports:a=this.Onvalid={};var a=exports;a.VERSION="0.1.0";var b=this._;!b&&typeof require!=="undefined"&&(b=require("underscore")._);var c=a.validate=function(a,c){return b.all(b.keys(c),function(a,b){return d(a.key,c.key)},a)};var d=function(a,c){return b.isFunction(c)?c(a):b.isEqual(a,c)};a.child=function(a){return function(b){return isValid(b,a)}},a.or=function(a){return function(c){return b.any(a,function(a,b){return validateSingle(a,b)},c)}},a.not=function(a){return function(b){return!validateSingle(b,a)}},a.opt=function(a){return function(c){return b.isUndefined(c)?true:validateSingle(c,a)}},a.notExists=function(){return false},a.exists=function(){return true},a.all=function(a){return function(c){return b.all(c,function(a,c){b.contains(c,a)},a)}},a._in=function(a){return function(c){b.contains(c,a)}},a.nin=function(a){return function(c){return b.all(a,function(a,c){return!b.isEqual(a,c)},c)}},a.eq=function(a){return function(c){return b.isEqual(c,a)}},a.ne=function(a){return function(c){return!b.isEqual(c,a)}},a.mod=function(a){return function(b){return b%a==0}},a.gt=function(a){return function(b){return b>a}},a.lt=function(a){return function(b){return b<a}},a.gte=function(a){return function(b){return b>=a}},a.lte=function(a){return function(b){return b<=a}}})()

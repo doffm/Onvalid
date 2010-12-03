@@ -1,0 +1,15 @@
+{
+    "name"        : "onvalid",
+    "description" : "a tool for validating JSON object against schemas written in javascript",
+    "version"     : "0.1.0",
+    "author"      : "Mark Doffman <mark.doffman@gmail.com>",
+    "dependencies": {
+        "underscore"   : "1.1.3",
+        "coffee-script": "0.9.5",
+        "docco"        : "0.3.0",
+        "expresso"     : "0.7.0",
+        "uglify-js"    : "0.0.1",
+    },
+    "lib   : ".",
+    "main" : "onvalid.js",
+}
