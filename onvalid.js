@@ -69,7 +69,7 @@ Onvalid may be freely distributed under the MIT license.
     */
     var match = Onvalid.match = function (vd) {return function (pd) {
         if (_.isUndefined(pd)) return false;
-        return _.all (_.keys (vd), function (key) {
+        return _.every (_.keys (vd), function (key) {
                 return validator (pd[key], vd[key]);
             });        
     };};
@@ -88,8 +88,16 @@ Onvalid may be freely distributed under the MIT license.
       A boolean expression. Validates only if the property does not match
       the given validator.
     */
-    Onvalid.not = function (v) {return function (p) {
-        return !validator (p, v);
+    Onvalid.nor = function (vs) {return function (p) {
+        /*
+        Explaining the negation and use of every:
+            De Morgan's theorem - !p && !q <==> !(p || q)
+        
+        This means we can possibly use the native 'every' function.
+        */
+        return _.every (vs, function (v) {
+                return !(validator (p, v));
+            });
     };};
     
     /*
@@ -119,7 +127,7 @@ Onvalid may be freely distributed under the MIT license.
     */
     Onvalid.all = function (vs) {return function (ps) {
         if (!_.isArray(ps)) return false;
-        return _.all (ps, function (p) {return _.contains(p, vs);});
+        return _.every (ps, function (p) {return _.contains(p, vs);});
     };};
     
     /*
@@ -131,7 +139,7 @@ Onvalid may be freely distributed under the MIT license.
       Ensure that the property is not contained in the colleciton provided.
     */
     Onvalid.nin = function (vs) {return function (p) {
-        return _.all (vs, function (v) {return !_.isEqual (p, v);});
+        return _.every (vs, function (v) {return !_.isEqual (p, v);});
     };};
     
     /*
