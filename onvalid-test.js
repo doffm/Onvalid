@@ -14,6 +14,20 @@
         assert.ok (!ov.validate ({}, schema));
     };
 
+    exports['test regexp'] = function () {
+        var schema = {
+            foo: /\d{7}/,
+            bar: /foo\s*bar/
+        };
+        assert.ok (ov.validate ({foo:"1234567", bar:"foobar", baz:""}, schema));
+        assert.ok (ov.validate ({foo:"1234567", bar:"foo bar"}, schema));
+        assert.ok (!ov.validate ({foo:"123456", bar:"foo bar"}, schema));
+        assert.ok (!ov.validate ({foo:"123456", bar:"fooar"}, schema));
+        assert.ok (!ov.validate ({foo:123456, bar:"foo bar"}, schema));
+        assert.ok (!ov.validate ({foo:"1234567"}, schema));
+        assert.ok (!ov.validate ({}, schema));
+    };    
+
     exports['test match'] = function () {
         var schema = {
             foo: "",

@@ -37,17 +37,23 @@
     
     // ## Validators
     //  
-    // A validator is either a JSON value or a function of type (Any) -> Boolean.
+    // A validator is either a JSON value, Regexp or a function of type
+    // (Any) -> Boolean.
     //
     // If the validator is a value it is assumed that we are matching for equality.
+    // If the validator is a regexp it is assumed that we are matching a string
+    // against it.
     
     // Validate a single property of the object. If the validator is a value then
     // assume we are checking for equality. Otherwise call the validator function.
     var validator = function (property, validator) {
-        if (_.isFunction (validator))
-            return validator (property);
-        else
-            return _.isEqual (property, validator);
+        if (_.isFunction (validator)) {
+            return validator (property);            
+        } else if (_.isRegExp (validator)) {
+            return validator.test (property);
+        } else {
+            return _.isEqual (property, validator);            
+        }
     };
 
     // Turns a schema object in to a validator function. Validates that the
