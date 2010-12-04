@@ -13,6 +13,20 @@
         assert.ok (!ov.validate ({foo:""}, schema));
         assert.ok (!ov.validate ({}, schema));
     };
+    
+    exports['test sub'] = function () {
+        var schema = {
+            foo: "",
+            bar: {
+                foo: ""
+            }
+        };
+        assert.ok (ov.validate ({foo:"", bar:{foo:"", bar:""}}, schema));
+        assert.ok (ov.validate ({foo:"", bar:{foo:""}}, schema));  
+        assert.ok (!ov.validate ({foo:"", bar:""}, schema));   
+        assert.ok (!ov.validate ({foo:"", bar:{}}, schema));
+        assert.ok (!ov.validate ({foo:""}, schema));
+    };
 
     exports['test regexp'] = function () {
         var schema = {
@@ -27,20 +41,6 @@
         assert.ok (!ov.validate ({foo:"1234567"}, schema));
         assert.ok (!ov.validate ({}, schema));
     };    
-
-    exports['test match'] = function () {
-        var schema = {
-            foo: "",
-            bar: __.match ({
-                foo: ""
-            })
-        };
-        assert.ok (ov.validate ({foo:"", bar:{foo:"", bar:""}}, schema));
-        assert.ok (ov.validate ({foo:"", bar:{foo:""}}, schema));  
-        assert.ok (!ov.validate ({foo:"", bar:""}, schema));   
-        assert.ok (!ov.validate ({foo:"", bar:{}}, schema));
-        assert.ok (!ov.validate ({foo:""}, schema));
-    };
 
     exports['test or'] = function () {
         var schema = {
@@ -81,9 +81,9 @@
     exports['test opt'] = function () {
         var schema = {
             foo: "",
-            bar: __.opt (__.match ({
+            bar: __.opt ({
                 foo: ""
-            }))
+            })
         };
         assert.ok (ov.validate ({foo:"", bar:{foo:"", bar:""}}, schema));
         assert.ok (ov.validate ({foo:"", bar:{foo:""}}, schema));  
