@@ -72,9 +72,17 @@
                 return validator (p, v);
             });
     };};
+    
+    // A boolean expression. Validates only if the property matches all
+    // of the given validators.
+    Onvalid.and = function (vs) {return function (p) {
+        return _.every (vs, function (v) {
+                return (validator (p, v));
+            });
+    };};
 
     // A boolean expression. Validates only if the property does not match
-    // the given validator.
+    // any of the given validators.
     Onvalid.nor = function (vs) {return function (p) {
         // Explaining the negation and use of every:
         //     De Morgan's theorem - !p && !q <==> !(p || q)

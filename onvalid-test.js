@@ -54,6 +54,18 @@
         assert.ok (!ov.validate ({foo:10}, schema));
     };
 
+    exports['test and'] = function () {
+        var schema = {
+            foo: __.and([__.lt(20), __.gt(10)])
+        };
+        assert.ok (ov.validate ({foo:11}, schema));
+        assert.ok (ov.validate ({foo:15}, schema));
+        assert.ok (ov.validate ({foo:19}, schema));
+        assert.ok (!ov.validate ({foo:20}, schema));
+        assert.ok (!ov.validate ({foo:10}, schema));
+        assert.ok (!ov.validate ({foo:0}, schema));
+    };
+
     exports['test nor'] = function () {
         var schema = {
             foo: __.nor([1, 2, __.gt(10)])
