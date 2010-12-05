@@ -2,33 +2,33 @@
 //      Copyright (c) 2010 Mark Doffman, Codethink Ltd
 //      Onvalid may be freely distributed under the MIT license.
 
-// Onvalid is a tool for creating JSON schemas directly in Javascript.
-// Schemas are standard Javascript objects and are built using properties,
-// JSON values and functions that check whether a given JSON value
-// is valid at a particular property.
-//
-//      var __ = Onvalid = require ('onvalid');
-//      
-//      var schema = {
-//          username: __.exists,
-//          status: __.exists,
-//          latitude: __.opt (__.and (__.gte(-90), __.lte(90))),
-//          longitude: __.opt (__.and (__.gte(-180), __.lte(180))),
-//          type: __in (['Registered', 'Unregistered'])    
-//      };
-//      
-//      var obj = JSON.parse ('{       \
-//          "username": "Frank",       \
-//          "status": "Out on patrol", \
-//          "latitude"": "57",         \
-//          "type": "Registered"       \
-//      }');
-//      
-//      if (Onvalid.validate (obj, schema)) {
-//          console.log ('Success');
-//      }
-
 (function () {
+    // Onvalid is a tool for creating JSON schemas directly in Javascript.
+    // Schemas are standard Javascript objects and are built using properties,
+    // JSON values and functions that check whether a given JSON value
+    // is valid at a particular property.
+    //
+    //      var __ = Onvalid = require ('onvalid');
+    //      
+    //      var schema = {
+    //          username: __.exists,
+    //          status: __.exists,
+    //          latitude: __.opt (__.and (__.gte(-90), __.lte(90))),
+    //          longitude: __.opt (__.and (__.gte(-180), __.lte(180))),
+    //          type: __in (['Registered', 'Unregistered'])    
+    //      };
+    //      
+    //      var obj = JSON.parse ('{       \
+    //          "username": "Frank",       \
+    //          "status": "Out on patrol", \
+    //          "latitude"": "57",         \
+    //          "type": "Registered"       \
+    //      }');
+    //      
+    //      if (Onvalid.validate (obj, schema)) {
+    //          console.log ('Success');
+    //      }
+
     // When in the browser, export to the global object, otherwise export to a
     // CommonJs module.
     if (typeof exports !== 'undefined') {
