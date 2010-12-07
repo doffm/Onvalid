@@ -16,16 +16,23 @@
     
     exports['test sub'] = function () {
         var schema = {
-            foo: "",
+            foo: "a",
             bar: {
-                foo: ""
+                foo: "b"
             }
         };
-        assert.ok (ov.validate ({foo:"", bar:{foo:"", bar:""}}, schema));
-        assert.ok (ov.validate ({foo:"", bar:{foo:""}}, schema));  
-        assert.ok (!ov.validate ({foo:"", bar:""}, schema));   
-        assert.ok (!ov.validate ({foo:"", bar:{}}, schema));
-        assert.ok (!ov.validate ({foo:""}, schema));
+
+        assert.ok (ov.validate ({foo:"a", bar:{foo:"b", bar:""}}, schema));
+        assert.ok (ov.validate ({foo:"a", bar:{foo:"b"}}, schema)); 
+        assert.ok (!ov.validate ({foo:"a", bar:""}, schema));
+        assert.ok (!ov.validate ({foo:"a", bar:{}}, schema));
+        assert.ok (!ov.validate ({foo:"a"}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:"a", bar:""}, schema, efunc));
+        assert.equal (error,
+            "Property at bar is not valid: Property at foo is not valid: must be equal to b");
     };
 
     exports['test regexp'] = function () {
@@ -40,6 +47,11 @@
         assert.ok (!ov.validate ({foo:123456, bar:"foo bar"}, schema));
         assert.ok (!ov.validate ({foo:"1234567"}, schema));
         assert.ok (!ov.validate ({}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:"1234567"}, schema, efunc));
+        assert.equal (error, "Property at bar is not valid: must match regex /foo\\s*bar/");
     };    
 
     exports['test or'] = function () {
@@ -52,6 +64,11 @@
         assert.ok (ov.validate ({foo:12}, schema));
         assert.ok (!ov.validate ({foo:0}, schema));
         assert.ok (!ov.validate ({foo:10}, schema));
+        
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:0}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must match at-least one of the constraints");
     };
 
     exports['test and'] = function () {
@@ -64,6 +81,12 @@
         assert.ok (!ov.validate ({foo:20}, schema));
         assert.ok (!ov.validate ({foo:10}, schema));
         assert.ok (!ov.validate ({foo:0}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:0}, schema, efunc));
+        assert.equal (error,
+            "Property at foo is not valid: constraint at position 2 is not met: must be greater than 10");
     };
 
     exports['test nor'] = function () {
@@ -76,6 +99,12 @@
         assert.ok (!ov.validate ({foo:12}, schema));
         assert.ok (ov.validate ({foo:10}, schema));
         assert.ok (ov.validate ({foo:0}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:12}, schema, efunc));
+        assert.equal (error,
+            "Property at foo is not valid: constraint at position 3 must not be met");
     };
 
     exports['test opt'] = function () {
@@ -90,6 +119,12 @@
         assert.ok (!ov.validate ({foo:"", bar:""}, schema));   
         assert.ok (!ov.validate ({foo:"", bar:{}}, schema));
         assert.ok (ov.validate ({foo:""}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:"", bar:{}}, schema, efunc));
+        assert.equal (error,
+            "Property at bar is not valid: Property at foo is not valid: must be equal to ");
     };
 
     exports['test exists'] = function () {
@@ -101,6 +136,11 @@
         assert.ok (ov.validate ({foo:"", bar:""}, schema));
         assert.ok (!ov.validate ({foo:""}, schema));
         assert.ok (!ov.validate ({}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must exist");
     };
 
     exports['test notExists'] = function () {
@@ -113,6 +153,11 @@
         assert.ok (!ov.validate ({foo:""}, schema));
         assert.ok (ov.validate ({baz:""}, schema));
         assert.ok (ov.validate ({}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:""}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must not exist");
     };
     
     exports['test eq'] = function () {
@@ -121,6 +166,11 @@
         };
         assert.ok (ov.validate ({foo:5}, schema));
         assert.ok (!ov.validate ({foo:7}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:7}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must be equal to 5");
     };
 
     exports['test ne'] = function () {
@@ -129,6 +179,11 @@
         };
         assert.ok (!ov.validate ({foo:5}, schema));
         assert.ok (ov.validate ({foo:7}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:5}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must not be equal to 5");
     };
     
     exports['test lte'] = function () {
@@ -138,6 +193,11 @@
         assert.ok (ov.validate ({foo:3}, schema));
         assert.ok (ov.validate ({foo:5}, schema));
         assert.ok (!ov.validate ({foo:7}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:7}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must be less than or equal to 5");
     };
     
     exports['test gte'] = function () {
@@ -147,6 +207,11 @@
         assert.ok (ov.validate ({foo:7}, schema));
         assert.ok (ov.validate ({foo:5}, schema));
         assert.ok (!ov.validate ({foo:3}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:3}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must be greater than or equal to 5");
     };
 
     exports['test lt'] = function () {
@@ -155,6 +220,11 @@
         };
         assert.ok (ov.validate ({foo:3}, schema));
         assert.ok (!ov.validate ({foo:5}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:5}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must be less than 5");
     };
 
 
@@ -164,6 +234,11 @@
         };
         assert.ok (ov.validate ({foo:7}, schema));
         assert.ok (!ov.validate ({foo:5}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:5}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must be greater than 5");
     };
     
     exports['test mod'] = function () {
@@ -177,5 +252,10 @@
         assert.ok (ov.validate ({foo:15}, schema));
         assert.ok (!ov.validate ({foo:1}, schema));
         assert.ok (!ov.validate ({foo:5}, schema));
+
+        var error = "";
+        var efunc = function (e) {error = e;};        
+        assert.ok (!ov.validate ({foo:5}, schema, efunc));
+        assert.equal (error, "Property at foo is not valid: must be wholely divisible by 3");
     };
 })();

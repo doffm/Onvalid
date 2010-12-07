@@ -1,4 +1,4 @@
-//      onvalid.js 0.1.0
+//      onvalid.js 0.2.0
 //      Copyright (c) 2010 Mark Doffman, Codethink Ltd
 //      Onvalid may be freely distributed under the MIT license.
 
@@ -21,7 +21,7 @@
     //      var obj = JSON.parse ('{       \
     //          "username": "Frank",       \
     //          "status": "Out on patrol", \
-    //          "latitude"": "57",         \
+    //          "latitude": "57",          \
     //          "type": "Registered"       \
     //      }');
     //      
@@ -48,64 +48,115 @@
     
     // ## Schemas
     //  
-    // A JSON schema is defined by a standard Javascript object. Properties
+    // A schema is defined using standard Javascript object. Properties
     // of this object can be one of the following.
     //
-    //- *Values*, The value in the schema must match that of the JSON object.
-    //- *Regexp object*, The property in the JSON object will be matched against it.
-    //- *Validator functions*, These take the value of the JSON object property
-    //  and return a boolean argument indicating the match.
-    //- *Child Schema*, The property in the JSON object will be matched against it.
+    //- *Value* Checks for equality between the value in the schema and th JSON object.
+    //- *Regex* Checks that the value in the JSON object matches the regex.
+    //- *Object* Assumed to be a child schema. The property of the JSON object
+    //  is validated against it.
+    //- *Function* A validator function takes the value of the JSON object and decides
+    //  whether it is valid.
     //
-    // Properties of the JSON object not present in the schema are ignored.      
+    // Properties of the JSON object not present in the schema are ignored.
+    
+    // Checks if the given object matches the given schema.
+    Onvalid.validate = function (object, schema, errorReturn) {
+        return Onvalid.schema (schema)(object, errorReturn);
+    };
 
-    // Check if the provided value matches the schema.
-    var validate = Onvalid.validate = function (property, validator) {
-        if (_.isFunction (validator))
-            return validator (property);            
-        
+    // Returns a validator function based on type of the schema property
+    var wrapper = function (validator) {
+        if (_.isFunction (validator)) 
+            return validator;           
+     
         if (_.isRegExp (validator))
-            return validator.test (property);
-        
+            return Onvalid.regex (validator);         
+      
         if (_.isArray (validator) || _.isString (validator) || _.isNumber (validator))
-            return _.isEqual (property, validator);
+            return Onvalid.eq (validator);
         
         // Assume a JSON object
-        if (_.isUndefined (property))
-            return false;
-            
-        return _.every (_.keys (validator), function (key) {
-            return validate (property[key], validator[key]);
-        });
+        return Onvalid.schema (validator);
     };
 
     // ## Validators
     //  
-    // The following functions create validator functions which are of type
-    // `(JSON Value) -> Bool`.
+    // Validator functions take the property and return a Boolean depending on
+    // whether the property is valid. Validator functions also optionally take
+    // a function used to return any validator erorrs.
 
+    // Takes a function with just one argument, the property to validate
+    // as well as a message to return if validation fails.
+    //
+    // Generates a validator function that uses the message for error reporting.
+    var ew = Onvalid.errWrapper = function (validator, message) {
+        return function (property, errorReturn) {
+            var result = validator (property);
+            if (!result && errorReturn && message)
+                errorReturn (message);
+            return result;
+        };
+    };
+    
+    // The following functions generate validator functions.
+
+    // ### Base
+    
+    // Validates if the property matches the given schema
+    Onvalid.schema = function (v) {return function (property, errorReturn) {
+        if (_.isUndefined (property)) return false;
+        return _.every (_.keys(v), function (key) {
+            var error = "";
+            var result = wrapper (v[key]) (property[key], function (e) {error = e;});
+            
+            if (!result && errorReturn)
+                errorReturn ('Property at ' + key + ' is not valid: ' + error);
+            return result;
+        });
+    };};
+    
+    // ### Regex
+    
+    // The property must match the given regex
+    Onvalid.regex = function (v) {return ew (function (property) {
+        return v.test (property);
+    }, 'must match regex ' + v);};
+    
     // ### Boolean operators
     
-    // The property can match any of the provided validator functions or values.
-    Onvalid.or = function (vs) {return function (p) {
-        return _.any (vs, function (v) {
-                return validate (p, v);
-            });
-    };};
+    // The property can match any of the provided validator functions or values
+    Onvalid.or = function (vs) {return ew (function (p) {
+            return _.any (vs, function (v) {
+                    return wrapper (v)(p);
+                });
+
+    }, 'must match at-least one of the constraints');};
     
     // Validates only if the property matches all of the given validators functions
     // or values.
-    Onvalid.and = function (vs) {return function (p) {
-        return _.every (vs, function (v) {
-                return (validate (p, v));
+    Onvalid.and = function (vs) {return function (property, errorReturn) {
+        return _.every (vs, function (v, i) {
+                var error = "";
+                var result = wrapper (v)(property, function (e){error = e;});
+
+                if (!result && errorReturn)
+                    errorReturn ('constraint at position ' + (i+1) + ' is not met: ' + error);
+
+                return result;
             });
     };};
 
     // Validates only if the property does not match any of the given validator
     // functions or values.
-    Onvalid.nor = function (vs) {return function (p) {
-        return _.every (vs, function (v) {
-                return !(validate (p, v));
+    Onvalid.nor = function (vs) {return function (property, errorReturn) {
+        return _.every (vs, function (v, i) {
+                var result = wrapper (v)(property);
+                
+                if (result && errorReturn)
+                    errorReturn ('constraint at position ' + (i+1) + ' must not be met');
+                
+                return !result;
             });
     };};
     
@@ -113,57 +164,77 @@
     
     // The property is optional. It must match the provided validator function
     // or value only if it exists.
-    Onvalid.opt = function (v) {return function (p) {
-        if (_.isUndefined (p))
+    Onvalid.opt = function (v) {return function (property, errorReturn) {
+        if (_.isUndefined (property))
             return true;
         else
-            return validate (p, v);
+            return wrapper (v) (property, errorReturn);
     };};
      
     // Ensure that the property does not exist.
-    Onvalid.notExists = function (p) {return _.isUndefined(p);};
+    Onvalid.notExists = ew (function (p) {
+        return _.isUndefined(p);
+    }, 'must not exist');
     
     // Ensure that the property exists.
-    Onvalid.exists = function (p) {return !_.isUndefined(p);};
+    Onvalid.exists = ew (function (p) {
+        return !_.isUndefined(p);
+    }, 'must exist');
     
     // ### Array operators
     
     // Ensure that all items in the property array are present in the schema
     // array.
-    Onvalid.all = function (vs) {return function (ps) {
+    Onvalid.all = function (vs) {return ew (function (ps) {
         if (!_.isArray(ps)) return false;
         return _.every (ps, function (p) {return _.contains(p, vs);});
-    };};
+    }, 'must match all of ' + vs);};
     
     // Ensure that the property is contained in the collection provided.
-    Onvalid._in = function (vs) {return function (p) {return _.contains(p, vs);};};
+    Onvalid._in = function (vs) {return ew (function (p) {
+        return _.contains(p, vs);
+    }, 'must be contained in ' + vs);};
     
     // Ensure that the property is not contained in the colleciton provided.
-    Onvalid.nin = function (vs) {return function (p) {
+    Onvalid.nin = function (vs) {return ew (function (p) {
         return _.every (vs, function (v) {return !_.isEqual (p, v);});
-    };};
+    }, 'must not be contained in' + vs);};
     
     // ### Comparison operators
     
     // Ensure that the property is equal to the value provided.
-    Onvalid.eq = function (v) {return function (p) {return _.isEqual(p, v);};};
+    Onvalid.eq = function (v) {return ew (function (p) {
+        return _.isEqual(p, v);
+    }, 'must be equal to ' + v);};
     
     // Ensure that the property is not equal to the value provided.
-    Onvalid.ne = function (v) {return function (p) {return !_.isEqual(p, v);};};
+    Onvalid.ne = function (v) {return ew (function (p) {
+        return !_.isEqual(p, v);
+    }, 'must not be equal to ' + v);};
     
     // Ensure that the property wholely divisible by the value provided.
-    Onvalid.mod = function (v) {return function (p) {return (p % v) == 0;};};
+    Onvalid.mod = function (v) {return ew (function (p) {
+        return (p % v) === 0;
+    }, 'must be wholely divisible by ' + v);};
 
     // Ensure that the property is greater than the value provided.
-    Onvalid.gt = function (v) {return function (p) {return p > v;};};
+    Onvalid.gt = function (v) {return ew (function (p) {
+        return p > v;
+    }, 'must be greater than ' + v);};
     
     // Ensure that the property is less than the value provided.
-    Onvalid.lt = function (v) {return function (p) {return p < v;};};
+    Onvalid.lt = function (v) {return ew (function (p) {
+        return p < v;
+    }, 'must be less than ' + v);};
     
     // Ensure that the property is greater than or equal to the value provided.
-    Onvalid.gte = function (v) {return function (p) {return p >= v;};};
+    Onvalid.gte = function (v) {return ew (function (p) {
+        return p >= v;
+    }, 'must be greater than or equal to ' + v);};
     
     // Ensure that the property is less than or equal to the value provided.
-    Onvalid.lte = function (v) {return function (p) {return p <= v;};};
+    Onvalid.lte = function (v) {return ew(function (p) {
+        return p <= v;
+    }, 'must be less than or equal to ' + v);};
 
 })();
