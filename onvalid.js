@@ -3,10 +3,10 @@
 //      Onvalid may be freely distributed under the MIT license.
 
 (function () {
-    // Onvalid is a tool for creating JSON schemas directly in Javascript.
-    // Schemas are standard Javascript objects and are built using properties,
+    // Onvalid is a tool for validating JSON objects. Schemas are written
+    // directly in Javascript. Schemas are built using properties,
     // JSON values and functions that check whether a given JSON value
-    // is valid at a particular property.
+    // is valid.
     //
     //      var __ = Onvalid = require ('onvalid');
     //      
@@ -27,6 +27,24 @@
     //      
     //      if (Onvalid.validate (obj, schema)) {
     //          console.log ('Success');
+    //      }
+    //
+    // Onvalid also produces error messages that indicate why a JSON object
+    // has failed to validate. The `validate` function optionally takes
+    // a function parameter that reports the error.
+    //
+    //      var obj = JSON.parse ('{       \
+    //          "username": "Frank",       \
+    //          /* Status is missing */    \
+    //          "latitude": "57",          \
+    //          "type": "Registered"       \
+    //      }');
+    //      
+    //      var err = "";
+    //      if (Onvalid.validate (obj, schema, function (e){err=e;})) {
+    //          console.log ('Success');
+    //      } else {
+    //          console.log (err);
     //      }
 
     // When in the browser, export to the global object, otherwise export to a
