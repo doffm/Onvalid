@@ -57,7 +57,7 @@
     
     var Onvalid = exports;
     
-    Onvalid.VERSION = '0.1.0';
+    Onvalid.VERSION = '0.2.0';
 
     // This module depends on Underscore.js. Get underscore from the global
     // object or import from a CommonJs module.

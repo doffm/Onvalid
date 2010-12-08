@@ -6,9 +6,9 @@
     "repository"  : { 
         "type" : "git",
         "url" : "http://github.com/doffm/Onvalid.git"
-    }
-    "dependencies": {
-        "underscore"   : ">1.1.3",
     },
-    "main" : "onvalid.js",
+    "dependencies": {
+        "underscore"   : ">=1.1.3"
+    },
+    "main" : "onvalid.js"
 }
