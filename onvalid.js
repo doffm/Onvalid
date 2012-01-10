@@ -1,4 +1,4 @@
-//      onvalid.js 0.2.0
+//      onvalid.js 0.2.1
 //      Copyright (c) 2010 Mark Doffman, Codethink Ltd
 //      Onvalid may be freely distributed under the MIT license.
 
@@ -13,8 +13,8 @@
     //      var schema = {
     //          username: __.exists,
     //          status: __.exists,
-    //          latitude: __.opt (__.and (__.gte(-90), __.lte(90))),
-    //          longitude: __.opt (__.and (__.gte(-180), __.lte(180))),
+    //          latitude: __.opt (__.and ( [ __.gte(-90), __.lte(90) ] )),
+    //          longitude: __.opt (__.and ( [ __.gte(-180), __.lte(180) ] )),
     //          type: __in (['Registered', 'Unregistered'])    
     //      };
     //      
@@ -57,7 +57,7 @@
     
     var Onvalid = exports;
     
-    Onvalid.VERSION = '0.2.0';
+    Onvalid.VERSION = '0.2.1';
 
     // This module depends on Underscore.js. Get underscore from the global
     // object or import from a CommonJs module.
@@ -141,6 +141,13 @@
         return v.test (property);
     }, 'must match regex ' + v);};
     
+
+    // ### Email
+    
+    // Just using regex
+    Onvalid.email = Onvalid.regex( /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/ );
+
+
     // ### Boolean operators
     
     // The property can match any of the provided validator functions or values
