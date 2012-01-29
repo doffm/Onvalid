@@ -54,6 +54,20 @@
         assert.equal (error, "Property at bar is not valid: must match regex /foo\\s*bar/");
     };    
 
+    exports['test email'] = function () {
+        var schema = {
+            foo: __.email
+        };
+        assert.ok (ov.validate ({foo:"foo@bar.baz.com"}, schema));
+        assert.ok (ov.validate ({foo:"foo.bar@baz.com"}, schema));
+        assert.ok (ov.validate ({foo:"foo_bar@baz.com"}, schema));
+        assert.ok (!ov.validate ({foo:"foo.bar.com"}, schema));
+        assert.ok (!ov.validate ({foo:"foo_bar@"}, schema));
+        assert.ok (!ov.validate ({foo:"foo_bar@foo.bar@foobar"}, schema));
+        assert.ok (!ov.validate ({foo:""}, schema));
+        assert.ok (!ov.validate ({}, schema));
+    };
+
     exports['test or'] = function () {
         var schema = {
             foo: __.or([1, 2, __.gt(10)])

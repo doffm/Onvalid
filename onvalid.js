@@ -144,7 +144,7 @@
 
     // ### Email
     
-    // Just using regex
+    // The property must be in the form of an e-mail address
     Onvalid.email = Onvalid.regex( /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/ );
 
 
