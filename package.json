@@ -1,9 +1,9 @@
 {
     "name"        : "onvalid",
     "description" : "a tool for validating JSON objects against schemas written in javascript",
-    "version"     : "0.2.0",
+    "version"     : "0.2.1",
     "author"      : "Mark Doffman <mark.doffman@gmail.com>",
-    "repository"  : { 
+    "repository"  : {
         "type" : "git",
         "url" : "http://github.com/doffm/Onvalid.git"
     },
